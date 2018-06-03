@@ -3,7 +3,7 @@ Projeto com os exercícios do Curso M101JS: MongoDB for Node.js Developers
 
 ## Exercises
 
-* [hw1-1](hw1-1/README.md)
-* [hw1-2](hw1-2/README.md)
-* [hw1-3](hw1-3/README.md)
-* [hw1-4](hw1-4/README.md)
+* [hw1-1](hw1-1/)
+* [hw1-2](hw1-2/)
+* [hw1-3](hw1-3/)
+* [hw1-4](hw1-4/)

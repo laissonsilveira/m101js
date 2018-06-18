@@ -1,61 +1,65 @@
-const assert = require('assert');
-require('../util/mongoConn')('m101', exec);
+const MongoClient = require('mongodb').MongoClient,
+    assert = require('assert');
 
 const allOptions = [
     {
-        firstYear: 2002,
-        lastYear: 2016,
-        city: 'Palo Alto'
+        overview: "wiki",
     },
     {
-        lastYear: 2010,
-        city: 'New York'
-    },
-    {
-        city: 'London'
+        milestones: "CMO"
     }
 ];
+
 let numQueriesFinished = 0;
 const companiesSeen = {};
 
-function exec(db) {
-    for (let i = 0; i < allOptions.length; i++) {
-        const query = queryDocument(allOptions[i]);
-        queryMongoDB(db, query, i);
-    }
+for (let i = 0; i < allOptions.length; i++) {
+    const query = queryDocument(allOptions[i]);
+    queryMongoDB(query, i);
 }
 
-function queryMongoDB(db, query, queryNum) {
+function queryMongoDB(query, queryNum) {
 
-    const cursor = db.collection('companies').find(query);
+    MongoClient.connect('mongodb://localhost:27017/crunchbase', function (err, db) {
 
-    let numMatches = 0;
+        assert.equal(err, null);
+        console.log('Successfully connected to MongoDB for query: ' + queryNum);
 
-    cursor.forEach(
-        function (doc) {
-            numMatches = numMatches + 1;
-            if (doc.permalink in companiesSeen) return;
-            companiesSeen[doc.permalink] = doc;
-        },
-        function (err) {
-            assert.equal(err, null);
-            console.log('Query ' + queryNum + ' was:' + JSON.stringify(query));
-            console.log('Matching documents: ' + numMatches);
-            numQueriesFinished = numQueriesFinished + 1;
-            if (numQueriesFinished == allOptions.length) {
-                report();
+        const cursor = db.collection('companies').find(query);
+
+        let numMatches = 0;
+
+        cursor.forEach(
+            function (doc) {
+                numMatches = numMatches + 1;
+                if (doc.permalink in companiesSeen) return;
+                companiesSeen[doc.permalink] = doc;
+            },
+            function (err) {
+                assert.equal(err, null);
+                console.log('Query ' + queryNum + ' was:' + JSON.stringify(query));
+                console.log('Matching documents: ' + numMatches);
+                numQueriesFinished = numQueriesFinished + 1;
+                if (numQueriesFinished == allOptions.length) {
+                    report();
+                }
+                return db.close();
             }
-            return db.close();
-        }
-    );
+        );
+
+    });
+
 }
 
 function queryDocument(options) {
 
     console.log(options);
 
+    /* TODO: Complete this statement to match the regular expression 'social-networking' */
     const query = {
-        tag_list: ''/* TODO: Complete this statement to match the regular expression 'social-networking' */
+        tag_list: {
+            $regex: 'social-networking'
+        }
     };
 
     if (('firstYear' in options) && ('lastYear' in options)) {
@@ -64,6 +68,10 @@ function queryDocument(options) {
            appear in the options object, we will match documents that have a value for 
            the 'founded_year' field of companies documents in the correct range. 
         */
+        query.founded_year = {
+            '$gte': options.firstYear,
+            '$lte': options.lastYear
+        };
     } else if ('firstYear' in options) {
         query.founded_year = { '$gte': options.firstYear };
     } else if ('lastYear' in options) {
@@ -77,10 +85,10 @@ function queryDocument(options) {
            is a nested document containing fields that describe a corporate office. Each office
            document contains a 'city' field. A company may have multiple corporate offices. 
         */
+        query['offices.city'] = options.city;
     }
     return query;
 }
-
 
 function report() {
     let totalEmployees = 0;

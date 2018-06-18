@@ -6,7 +6,7 @@ module.exports = (dbName, cb) => {
         MongoClient.connect(`mongodb://${MONGODB_ADDRESS}`, (err, db) => {
             if (err) throw Error('Não foi possível conectar ao banco de dados Mongo');
             console.log('Conectado ao banco do MongoDB com sucesso');
-            cb(db);
+            cb(db, arguments);
         });
     } catch (err) {
         console.log(err.stack || err);

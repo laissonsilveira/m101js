@@ -1,14 +1,20 @@
 const MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
 
-const allOptions = [
-    {
-        overview: "wiki",
-    },
-    {
-        milestones: "CMO"
-    }
-];
+    const allOptions = [
+        {
+            firstYear: 2002,
+            lastYear: 2016,
+            city: 'Palo Alto'
+        },
+        {
+            lastYear: 2010,
+            city: 'New York'
+        },
+        {
+            city: 'London'
+        }
+    ];
 
 let numQueriesFinished = 0;
 const companiesSeen = {};
